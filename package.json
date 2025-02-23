@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/juliandtrianar/task-list-server#readme",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "task-list-server": "file:"
   }
 }

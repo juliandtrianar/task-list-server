@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { validateTaskData, validateRequestBody, validateIdParam } = require("./middlewares");
 
 let tasks = [
     { id: 1, isCompleted: false, description: "Walk the dog" },
@@ -8,20 +9,15 @@ let tasks = [
 ];
 
 
-router.use(express.json());
-
-
-router.post("/", (req, res) => {
+router.post("/", validateRequestBody, validateTaskData, (req, res) => {
     const { description } = req.body;
-    if (!description) return res.status(400).json({ message: "Description is required" });
-
     const newTask = { id: tasks.length + 1, isCompleted: false, description };
+
     tasks.push(newTask);
     res.status(201).json(newTask);
 });
 
-
-router.put("/:id", (req, res) => {
+router.put("/:id", validateIdParam, validateRequestBody, (req, res) => {
     const task = tasks.find(t => t.id === parseInt(req.params.id));
     if (!task) return res.status(404).json({ message: "Task not found" });
 
@@ -32,14 +28,14 @@ router.put("/:id", (req, res) => {
     res.json(task);
 });
 
-
-router.delete("/:id", (req, res) => {
+router.delete("/:id", validateIdParam, (req, res) => {
     const taskIndex = tasks.findIndex(t => t.id === parseInt(req.params.id));
     if (taskIndex === -1) return res.status(404).json({ message: "Task not found" });
 
     tasks.splice(taskIndex, 1);
-    res.status(204).send();
+    res.json({ message: "Task deleted successfully" });
 });
 
 module.exports = router;
+
  
