@@ -5,7 +5,6 @@ const jwt = require("jsonwebtoken");
 const { validateTaskData, validateRequestBody, validateIdParam } = require("./middlewares/middlewares");
 const { authenticateToken } = require("./auth");
 
-
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -24,7 +23,6 @@ let tasks = [
 
 app.get("/tasks", (req, res) => res.json(tasks));
 
-
 app.get("/tasks/:id", validateIdParam, (req, res) => {
     const task = tasks.find(t => t.id === parseInt(req.params.id));
     if (!task) return res.status(404).json({ error: "Task not found" });
@@ -35,7 +33,7 @@ app.get("/tasks/:id", validateIdParam, (req, res) => {
 app.post("/tasks", validateRequestBody, validateTaskData, (req, res) => {
     const { description } = req.body;
     const newTask = { id: tasks.length + 1, isCompleted: false, description };
-    
+
     tasks.push(newTask);
     res.status(201).json(newTask);
 });
@@ -70,6 +68,7 @@ app.delete("/tasks/:id", validateIdParam, (req, res) => {
     res.status(204).send();
 });
 
+
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
     const user = users.find(u => u.username === username && u.password === password);
@@ -81,15 +80,14 @@ app.post("/login", (req, res) => {
     res.json({ token });
 });
 
-
 app.get("/protected", authenticateToken, (req, res) => {
     res.json({ message: "You have access to this protected route", user: req.user });
 });
 
-
 app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
+
 
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
