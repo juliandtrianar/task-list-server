@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+</head>
+<body>
+    <h1>Todo App</h1>
+    <ul id="task-list"></ul>
+    <input type="text" id="new-task" placeholder="New Task">
+    <button onclick="addTask()">Add</button>
+
+    <script>
+        async function loadTasks() {
+            const response = await fetch("/tasks");
+            const tasks = await response.json();
+            const list = document.getElementById("task-list");
+            list.innerHTML = "";
+
+            tasks.forEach(task => {
+                const li = document.createElement("li");
+                li.innerHTML = `
+                    <strong id="desc-${task.id}">${task.description}</strong> - ${task.isCompleted ? "✅ Completed" : "❌ Pending"}
+                    <button onclick="toggleTask(${task.id}, ${!task.isCompleted})">Toggle</button>
+                    <button onclick="editTask(${task.id})">Edit</button>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        async function addTask() {
+            const description = document.getElementById("new-task").value;
+            await fetch("/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ description })
+            });
+            document.getElementById("new-task").value = "";
+            loadTasks();
+        }
+
+        async function toggleTask(id, isCompleted) {
+            await fetch(`/tasks/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ isCompleted })
+            });
+            loadTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch(`/tasks/${id}`, { method: "DELETE" });
+            loadTasks();
+        }
+
+        async function editTask(id) {
+            const newDescription = prompt("Enter new task description:");
+            if (!newDescription) return;
+
+            await fetch(`/tasks/${id}/description`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ description: newDescription })
+            });
+            loadTasks();
+        }
+
+        loadTasks();
+    </script>
+</body>
+</html>
