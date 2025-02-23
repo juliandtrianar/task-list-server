@@ -20,15 +20,23 @@ let tasks = [
     { id: 3, isCompleted: false, description: "Read a book" }
 ];
 
-
 app.get("/tasks", (req, res) => res.json(tasks));
+
+app.get("/tasks/incomplete", (req, res) => {
+    const incompleteTasks = tasks.filter(task => !task.isCompleted);
+    res.json(incompleteTasks);
+});
+
+app.get("/tasks/complete", (req, res) => {
+    const completeTasks = tasks.filter(task => task.isCompleted);
+    res.json(completeTasks);
+});
 
 app.get("/tasks/:id", validateIdParam, (req, res) => {
     const task = tasks.find(t => t.id === parseInt(req.params.id));
     if (!task) return res.status(404).json({ error: "Task not found" });
     res.json(task);
 });
-
 
 app.post("/tasks", validateRequestBody, validateTaskData, (req, res) => {
     const { description } = req.body;
@@ -38,27 +46,16 @@ app.post("/tasks", validateRequestBody, validateTaskData, (req, res) => {
     res.status(201).json(newTask);
 });
 
-
 app.put("/tasks/:id", validateRequestBody, validateIdParam, (req, res) => {
     const task = tasks.find(t => t.id === parseInt(req.params.id));
     if (!task) return res.status(404).json({ error: "Task not found" });
 
-    const { isCompleted } = req.body;
+    const { isCompleted, description } = req.body;
     if (isCompleted !== undefined) task.isCompleted = isCompleted;
+    if (description !== undefined) task.description = description;
 
     res.json(task);
 });
-
-app.put("/tasks/:id/description", validateRequestBody, validateIdParam, (req, res) => {
-    const task = tasks.find(t => t.id === parseInt(req.params.id));
-    if (!task) return res.status(404).json({ error: "Task not found" });
-
-    const { description } = req.body;
-    task.description = description;
-
-    res.json(task);
-});
-
 
 app.delete("/tasks/:id", validateIdParam, (req, res) => {
     const index = tasks.findIndex(t => t.id === parseInt(req.params.id));
@@ -67,7 +64,6 @@ app.delete("/tasks/:id", validateIdParam, (req, res) => {
     tasks.splice(index, 1);
     res.status(204).send();
 });
-
 
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
@@ -88,7 +84,7 @@ app.use((req, res) => {
     res.status(404).json({ error: "Route not found" });
 });
 
-
 const PORT = 3000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
 
